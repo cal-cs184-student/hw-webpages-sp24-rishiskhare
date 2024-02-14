@@ -26,6 +26,7 @@
 <h1 align="middle">CS 184/284A: Computer Graphics and Imaging, Spring 2024</h1>
 <h1 align="middle">Homework 1: Rasterizer</h1>
 <h2 align="middle">Rishi Khare and Jaeha Yi</h2>
+<h3 align="middle">Visit our website <a href="https://cal-cs184-student.github.io/hw-webpages-sp24-rishiskhare/">here</a></h2>
 
 <br><br>
 
@@ -54,8 +55,32 @@
   <table style="width=100%">
     <tr>
       <td>
-        <img src="images/test4-1.png" align="middle" width="400px"/>
+        <img src="images/test1.png" align="middle" width="400px"/>
+        <figcaption align="middle">basic/test1.svg</figcaption>
+      </td>
+      <td>
+        <img src="images/test2.png" align="middle" width="400px"/>
+        <figcaption align="middle">basic/test2.svg</figcaption>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <img src="images/test3.png" align="middle" width="400px"/>
+        <figcaption align="middle">basic/test3.svg</figcaption>
+      </td>
+      <td>
+        <img src="images/test4.png" align="middle" width="400px"/>
         <figcaption align="middle">basic/test4.svg</figcaption>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <img src="images/test5.png" align="middle" width="400px"/>
+        <figcaption align="middle">basic/test5.svg</figcaption>
+      </td>
+      <td>
+        <img src="images/test6.png" align="middle" width="400px"/>
+        <figcaption align="middle">basic/test6.svg</figcaption>
       </td>
     </tr>
     <br>
@@ -91,20 +116,6 @@
       <td>
         <img src="images/test4-16.png" align="middle" width="400px"/>
         <figcaption align="middle">Supersampling rate: 16 per pixel</figcaption>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img src="images/test4-1zoom.png" align="middle" width="400px"/>
-        <figcaption align="middle">Supersampling rate: 1 (zoomed in view)</figcaption>
-      </td>
-      <td>
-        <img src="images/test4-4zoom.png" align="middle" width="400px"/>
-        <figcaption align="middle">Supersampling rate: 4 (zoomed in view)</figcaption>
-      </td>
-      <td>
-        <img src="images/test4-16zoom.png" align="middle" width="400px"/>
-        <figcaption align="middle">Supersampling rate: 16 (zoomed in view)</figcaption>
       </td>
     </tr>
     <br>
@@ -154,7 +165,7 @@
         <figcaption align="middle">Radial gradients from vertices of triangle</figcaption>
       </td>
       <td>
-        <img src="images/task4-test7.png" align="middle" width="400px"/>
+        <img src="images/updated-test7.png" align="middle" width="400px"/>
         <figcaption align="middle">basic/test7.svg</figcaption>
       </td>
     </tr>
@@ -169,30 +180,31 @@
   The nearest neighbor pixel sampling method takes the closest defined pixel from the sample point. 
   The bilinear pixel sampling method takes the interpolated value, or weighted sum value, by interpolating across the four closest defined pixels from the sample point.  
 
-  The difference between the images is that bilinear sampling approximates an interpolated between all near points, so a thin white line in a dark area is more defined because the white is interpolated with the dark areas. 
-  In nearest sampling, a thin white line is less clear because any point a good enough distance away from the white line will be dark, as it will sample from the nearest dark pixel instead. 
-  A large difference occurs when there are highly contrasting colors and a big difference in relative size between contrasting areas. Nearest sampling will cause the larger size area to dominate while bilinear does a smoother approximation. 
+  The difference between the images is that bilinear sampling approximates an interpolated between all near points, so there is less harsh aliasing. 
+  If you look closely at the images with supersampling rate of 1, there is harsh aliasing in the nearest one because there's no interpolation that smooths values over nearby pixels. Nearest simply takes the closest valued pixel. 
+  This is less noticable in supersampling rate of 16, but bilinear sampling still leads to softer values with filtered out high frequencies. 
+  A large difference occurs when there are highly contrasting colors next to each other. Nearest sampling will cause sharp differences across the contrast, which could lead to jaggies and high frequency signals. Interpolation smooths pixels with the surrounding nearby sample points. 
 </p>
 <div align="middle">
   <table style="width=100%">
     <tr>
       <td>
-        <img src="images/task5-test1-nearest.png" align="middle" width="400px"/>
-        <figcaption align="middle">texmap/test1.svg (nearest, sampling rate of 1)</figcaption>
+        <img src="images/updated-test6-nearest-1.png" align="middle" width="400px"/>
+        <figcaption align="middle">texmap/test6.svg (nearest, sampling rate of 1)</figcaption>
       </td>
       <td>
-        <img src="images/task5-test1-bilinear.png" align="middle" width="400px"/>
-        <figcaption align="middle">texmap/test1.svg (bilinear, sampling rate of 1)</figcaption>
+        <img src="images/updated-test6-bilinear-1.png" align="middle" width="400px"/>
+        <figcaption align="middle">texmap/test6.svg (bilinear, sampling rate of 1)</figcaption>
       </td>
     </tr>
     <tr>
       <td>
-        <img src="images/task5-test1-nearest-16.png" align="middle" width="400px"/>
-        <figcaption align="middle">texmap/test1.svg (nearest, sampling rate of 16)</figcaption>
+        <img src="images/updated-test6-nearest-16.png" align="middle" width="400px"/>
+        <figcaption align="middle">texmap/test6.svg (nearest, sampling rate of 16)</figcaption>
       </td>
       <td>
-        <img src="images/task5-test1-bilinear-16.png" align="middle" width="400px"/>
-        <figcaption align="middle">texmap/test1.svg (bilinear, sampling rate of 16)</figcaption>
+        <img src="images/updated-test6-bilinear-16.png" align="middle" width="400px"/>
+        <figcaption align="middle">texmap/test6.svg (bilinear, sampling rate of 16)</figcaption>
       </td>
     </tr>
     <br>
@@ -208,14 +220,14 @@
   In response, trilinear has better antialiasing because the change in mipmap depth is smoother and reduces high frequency changes. 
   Number of samples per pixels increases the necessary memory and slows speed by a factor of the supersampling rate, as you need to store data of each supersample and process at each location to resolve to framebuffer. 
   <br>
-  Yosemite texture applied to texmap/test-1:
+  Yosemite texture applied to texmap/test-5:
 </p>
 <div align="middle">
   <table style="width=100%">
     <tr>
       <td>
-        <img src="images/yosemite.png" align="middle" width="400px"/>
-        <figcaption align="middle">Yosemite landscape</figcaption>
+        <img src="images/coral.png" align="middle" width="400px"/>
+        <figcaption align="middle">Coral landscape</figcaption>
       </td>
     </tr>
     <tr>
@@ -236,6 +248,16 @@
       <td>
         <img src="images/nearest-linear.png" align="middle" width="400px"/>
         <figcaption align="middle">L_NEAREST and P_LINEAR</figcaption>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <img src="images/linear-nearest.png" align="middle" width="400px"/>
+        <figcaption align="middle">L_LINEAR and P_NEAREST</figcaption>
+      </td>
+      <td>
+        <img src="images/linear-linear.png" align="middle" width="400px"/>
+        <figcaption align="middle">L_LINEAR and P_LINEAR</figcaption>
       </td>
     </tr>
     <br>
