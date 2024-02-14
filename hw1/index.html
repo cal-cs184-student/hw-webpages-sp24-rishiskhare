@@ -151,7 +151,7 @@
     <tr>
       <td>
         <img src="images/triangle.png" align="middle" width="400px"/>
-        <figcaption align="middle">Radial gradients from vertices of triangle (<a href="https://i.stack.imgur.com/i4fgj.jpg">source</a>)</figcaption>
+        <figcaption align="middle">Radial gradients from vertices of triangle</figcaption>
       </td>
       <td>
         <img src="images/task4-test7.png" align="middle" width="400px"/>
@@ -207,7 +207,7 @@
   In level sampling, trilinear resampling slows down speed and requires more memory compared to nearest (For trilinear, you need to calculate sample at two different levels and interpolate between them - requiring a total of 8 texel reads and 7 lerps). Just bilinear resampling is 4 texel reads and 3 lerps. 
   In response, trilinear has better antialiasing because the change in mipmap depth is smoother and reduces high frequency changes. 
   Number of samples per pixels increases the necessary memory and slows speed by a factor of the supersampling rate, as you need to store data of each supersample and process at each location to resolve to framebuffer. 
-
+  <br>
   Yosemite texture applied to texmap/test-1:
 </p>
 <div align="middle">
