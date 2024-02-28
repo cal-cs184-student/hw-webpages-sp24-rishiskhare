@@ -1,269 +1,310 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+
 <head>
-<style>
-  body {
-    padding: 100px;
-    width: 1000px;
-    margin: auto;
-    text-align: left;
-    font-weight: 300;
-    font-family: 'Open Sans', sans-serif;
-    color: #121212;
-  }
-  h1, h2, h3, h4 {
-    font-family: 'Source Sans Pro', sans-serif;
-  }
-</style>
-<title>CS 184/284A Rasterizer</title>
-<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+  <style>
+    body {
+      padding: 100px;
+      width: 1000px;
+      margin: auto;
+      text-align: left;
+      font-weight: 300;
+      font-family: 'Open Sans', sans-serif;
+      color: #121212;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4 {
+      font-family: 'Source Sans Pro', sans-serif;
+    }
+  </style>
+  <title>CS 184/284A Rasterizer</title>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
 </head>
 
 
 <body>
 
-<h1 align="middle">CS 184/284A: Computer Graphics and Imaging, Spring 2024</h1>
-<h1 align="middle">Homework 1: Rasterizer</h1>
-<h2 align="middle">Rishi Khare and Jaeha Yi</h2>
-<h3 align="middle">Visit our website <a href="https://cal-cs184-student.github.io/hw-webpages-sp24-rishiskhare/">here</a></h2>
+  <h1 align="middle">CS 184/284A: Computer Graphics and Imaging, Spring 2024</h1>
+  <h1 align="middle">Homework 1: Rasterizer</h1>
+  <h2 align="middle">Rishi Khare and Jaeha Yi</h2>
+  <h3 align="middle">Visit our website <a
+      href="https://cal-cs184-student.github.io/hw-webpages-sp24-rishiskhare/">here</a></h3>
 
-<br><br>
+  <br><br>
 
-<div>
+  <div>
 
-<h2 align="middle">Overview</h2>
-<p>
-  In this homework, we implemented a rasterizer system with support for anti-aliasing via supersampling and texturing via mipmaps. We sought to remove the common staircase effect ("jaggies") among high frequency images.
-  This homework was a fantastic introduction to developing graphic engines in C++, and we both appreciated the visual feedback while debugging this project.
-  Seeing a flawed image while testing made the debugging process very visual compared to the other projects, and gave us satisfaction when we eventually achieved the correct intended image.
-</p>
+    <h2 align="middle">Overview</h2>
+    <p>
+      In this homework, we implemented a rasterizer system with support for anti-aliasing via supersampling and
+      texturing via mipmaps. We sought to remove the common staircase effect ("jaggies") among high frequency images.
+      This homework was a fantastic introduction to developing graphic engines in C++, and we both appreciated the
+      visual feedback while debugging this project.
+      Seeing a flawed image while testing made the debugging process very visual compared to the other projects, and
+      gave us satisfaction when we eventually achieved the correct intended image.
+    </p>
 
-<h2 align="middle">Section I: Rasterization</h2>
+    <h2 align="middle">Section I: Rasterization</h2>
 
-<h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
+    <h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
 
-<p>
-  To rasterize a triangle, we check all the relevant points in the screen and color the points lying inside the triangle. 
-  We use line equations to efficiently calculate whether points lie in the triangle in constant time and use a bounding box to check only relevant points and not the entire sample buffer. 
+    <p>
+      To rasterize a triangle, we check all the relevant points in the screen and color the points lying inside the
+      triangle.
+      We use line equations to efficiently calculate whether points lie in the triangle in constant time and use a
+      bounding box to check only relevant points and not the entire sample buffer.
 
-  Our algorithm does not exceed the cost of checking the bounding box of the triangle because we loop only through the points in the bounding box, 
-  and the cost of operation on each point (check if it lies inside triangle) takes constant time. 
-</p>
+      Our algorithm does not exceed the cost of checking the bounding box of the triangle because we loop only through
+      the points in the bounding box,
+      and the cost of operation on each point (check if it lies inside triangle) takes constant time.
+    </p>
 
-<div align="middle">
-  <table style="width=100%">
-    <tr>
-      <td>
-        <img src="images/test1.png" align="middle" width="400px"/>
-        <figcaption align="middle">basic/test1.svg</figcaption>
-      </td>
-      <td>
-        <img src="images/test2.png" align="middle" width="400px"/>
-        <figcaption align="middle">basic/test2.svg</figcaption>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img src="images/test3.png" align="middle" width="400px"/>
-        <figcaption align="middle">basic/test3.svg</figcaption>
-      </td>
-      <td>
-        <img src="images/test4.png" align="middle" width="400px"/>
-        <figcaption align="middle">basic/test4.svg</figcaption>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img src="images/test5.png" align="middle" width="400px"/>
-        <figcaption align="middle">basic/test5.svg</figcaption>
-      </td>
-      <td>
-        <img src="images/test6.png" align="middle" width="400px"/>
-        <figcaption align="middle">basic/test6.svg</figcaption>
-      </td>
-    </tr>
-    <br>
-  </table>
-</div>
-
-
-<h3 align="middle">Part 2: Antialiasing triangles</h3>
-
-<p>
-  Supersampling is useful because it enables greater anti-aliasing (reduction of "jaggies" and filtering out high frequencies).
-  Supersampling is basically using a larger sample buffer (increasing the array size by a factor of the supersampling rate), because we are taking a higher resolution image and later reducing it to lower resolution when resolving to the frame buffer. 
-  The array can be one dimensional if we use special indexing such as y * width + x. 
-  In modifying the rasterization process, we sampled at a higher rate (at the appropriate fractions within the pixel) and expanded the sample frame memory to store pixels of the higher resolution. 
-  When resolving to the frame buffer, we averaged the averaged the supersampled pixels, to render in a lower resolution. The averaging filters out high frequencies (anti-aliasing). 
-  Below are outputs for basic/test4.svg.
-  The supersampling rate of 16 achieved the highest anti-aliasing effect, which is visible by the softened edges of the triangles when zoomed-in. 
-  By contrast, the supersampling rate of 1 had the lowest anti-aliasing effect, which can be showed by the presence of "jaggies"/staircase effect in the edges of the triangle.
-  In real world applications such as intensive gaming or video rendering, supersampling can make substantial improvements to visual quality, but it can be an expensive and physically taxing operation and can result in excessive blurring of artifacts.
-</p>
-
-<div align="middle">
-  <table style="width=100%">
-    <tr>
-      <td>
-        <img src="images/test4-1.png" align="middle" width="400px"/>
-        <figcaption align="middle">Supersampling rate: 1 per pixel</figcaption>
-      </td>
-      <td>
-        <img src="images/test4-4.png" align="middle" width="400px"/>
-        <figcaption align="middle">Supersampling rate: 4 per pixel</figcaption>
-      </td>
-      <td>
-        <img src="images/test4-16.png" align="middle" width="400px"/>
-        <figcaption align="middle">Supersampling rate: 16 per pixel</figcaption>
-      </td>
-    </tr>
-    <br>
-  </table>
-</div>
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/test1.png" align="middle" width="400px" />
+            <figcaption align="middle">basic/test1.svg</figcaption>
+          </td>
+          <td>
+            <img src="images/test2.png" align="middle" width="400px" />
+            <figcaption align="middle">basic/test2.svg</figcaption>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <img src="images/test3.png" align="middle" width="400px" />
+            <figcaption align="middle">basic/test3.svg</figcaption>
+          </td>
+          <td>
+            <img src="images/test4.png" align="middle" width="400px" />
+            <figcaption align="middle">basic/test4.svg</figcaption>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <img src="images/test5.png" align="middle" width="400px" />
+            <figcaption align="middle">basic/test5.svg</figcaption>
+          </td>
+          <td>
+            <img src="images/test6.png" align="middle" width="400px" />
+            <figcaption align="middle">basic/test6.svg</figcaption>
+          </td>
+        </tr>
+        <br>
+      </table>
+    </div>
 
 
-<h3 align="middle">Part 3: Transforms</h3>
-<p>
-  Transforms are applied via matrices which stretch, shear, rotate, translate, etc.
-</p>
-<div align="middle">
-  <table style="width=100%">
-    <tr>
-      <td>
-        <img src="images/robot.png" align="middle" width="400px"/>
-        <figcaption align="middle">BEFORE: transforms/robot.svg<br>The robot stands with his arms<br>outstretched to the side.</figcaption>
-      </td>
-      <td>
-        <img src="images/my_robot.png" align="middle" width="400px"/>
-        <figcaption align="middle">AFTER: transforms/my_robot.svg<br>The robot lifts his arm up to wave.</figcaption>
-      </td>
-    </tr>
-    <br>
-  </table>
-</div>
+    <h3 align="middle">Part 2: Antialiasing triangles</h3>
 
-<h2 align="middle">Section II: Sampling</h2>
+    <p>
+      Supersampling is useful because it enables greater anti-aliasing (reduction of "jaggies" and filtering out high
+      frequencies).
+      Supersampling is basically using a larger sample buffer (increasing the array size by a factor of the
+      supersampling rate), because we are taking a higher resolution image and later reducing it to lower resolution
+      when resolving to the frame buffer.
+      The array can be one dimensional if we use special indexing such as y * width + x.
+      In modifying the rasterization process, we sampled at a higher rate (at the appropriate fractions within the
+      pixel) and expanded the sample frame memory to store pixels of the higher resolution.
+      When resolving to the frame buffer, we averaged the averaged the supersampled pixels, to render in a lower
+      resolution. The averaging filters out high frequencies (anti-aliasing).
+      Below are outputs for basic/test4.svg.
+      The supersampling rate of 16 achieved the highest anti-aliasing effect, which is visible by the softened edges of
+      the triangles when zoomed-in.
+      By contrast, the supersampling rate of 1 had the lowest anti-aliasing effect, which can be showed by the presence
+      of "jaggies"/staircase effect in the edges of the triangle.
+      In real world applications such as intensive gaming or video rendering, supersampling can make substantial
+      improvements to visual quality, but it can be an expensive and physically taxing operation and can result in
+      excessive blurring of artifacts.
+    </p>
 
-
-<h3 align="middle">Part 4: Barycentric coordinates</h3>
-<p>
-  Barycentric coordinates allow for interpolation within shapes. 
-  Specifically, within triangles, barycentric coordinates are a straightforward representation to determine if a point is within a triangle's area 
-  (i.e. if at least one barycentric coordinate is negative, the point lies outside of the triangle). 
-  Parameterizing points within the area of a triangle can be vital for applications in graphics, such as texture mapping.
-  In the context of the triangle on the left, the three vertices are colored red, green, and blue, and the radial color gradient helps visualize barycentric coordinates.
-  Say the red vertex was labeled A, blue vertex as B, and green vertex as C. Then, a point (x, y) on the triangle could be mapped as (alpha, beta, gamma) such that alpha * A + beta * B + gamma * C = (x, y)
-  So, for example, vertex C would have barycentric coordinates of (0, 0, 1) since 0 * A + 0 * B + 1 * C = C.
-  Any point in the interior of the triangle would be composed of non-negative barycentric coordinates.
-</p>
-<div align="middle">
-  <table style="width=100%">
-    <tr>
-      <td>
-        <img src="images/triangle.png" align="middle" width="400px"/>
-        <figcaption align="middle">Radial gradients from vertices of triangle</figcaption>
-      </td>
-      <td>
-        <img src="images/updated-test7.png" align="middle" width="400px"/>
-        <figcaption align="middle">basic/test7.svg</figcaption>
-      </td>
-    </tr>
-    <br>
-  </table>
-</div>
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/test4-1.png" align="middle" width="400px" />
+            <figcaption align="middle">Supersampling rate: 1 per pixel</figcaption>
+          </td>
+          <td>
+            <img src="images/test4-4.png" align="middle" width="400px" />
+            <figcaption align="middle">Supersampling rate: 4 per pixel</figcaption>
+          </td>
+          <td>
+            <img src="images/test4-16.png" align="middle" width="400px" />
+            <figcaption align="middle">Supersampling rate: 16 per pixel</figcaption>
+          </td>
+        </tr>
+        <br>
+      </table>
+    </div>
 
 
-<h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
-<p>
-  Pixel sampling is the method of taking samples from real-world data. These samples can include textures, colors, normals, etc.   
-  The nearest neighbor pixel sampling method takes the closest defined pixel from the sample point. 
-  The bilinear pixel sampling method takes the interpolated value, or weighted sum value, by interpolating across the four closest defined pixels from the sample point.  
+    <h3 align="middle">Part 3: Transforms</h3>
+    <p>
+      Transforms are applied via matrices which stretch, shear, rotate, translate, etc.
+    </p>
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/robot.png" align="middle" width="400px" />
+            <figcaption align="middle">BEFORE: transforms/robot.svg<br>The robot stands with his arms<br>outstretched to
+              the side.</figcaption>
+          </td>
+          <td>
+            <img src="images/my_robot.png" align="middle" width="400px" />
+            <figcaption align="middle">AFTER: transforms/my_robot.svg<br>The robot lifts his arm up to wave.
+            </figcaption>
+          </td>
+        </tr>
+        <br>
+      </table>
+    </div>
 
-  The difference between the images is that bilinear sampling approximates an interpolated between all near points, so there is less harsh aliasing. 
-  If you look closely at the images with supersampling rate of 1, there is harsh aliasing in the nearest one because there's no interpolation that smooths values over nearby pixels. Nearest simply takes the closest valued pixel. 
-  This is less noticable in supersampling rate of 16, but bilinear sampling still leads to softer values with filtered out high frequencies. 
-  A large difference occurs when there are highly contrasting colors next to each other. Nearest sampling will cause sharp differences across the contrast, which could lead to jaggies and high frequency signals. Interpolation smooths pixels with the surrounding nearby sample points. 
-</p>
-<div align="middle">
-  <table style="width=100%">
-    <tr>
-      <td>
-        <img src="images/updated-test6-nearest-1.png" align="middle" width="400px"/>
-        <figcaption align="middle">texmap/test6.svg (nearest, sampling rate of 1)</figcaption>
-      </td>
-      <td>
-        <img src="images/updated-test6-bilinear-1.png" align="middle" width="400px"/>
-        <figcaption align="middle">texmap/test6.svg (bilinear, sampling rate of 1)</figcaption>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img src="images/updated-test6-nearest-16.png" align="middle" width="400px"/>
-        <figcaption align="middle">texmap/test6.svg (nearest, sampling rate of 16)</figcaption>
-      </td>
-      <td>
-        <img src="images/updated-test6-bilinear-16.png" align="middle" width="400px"/>
-        <figcaption align="middle">texmap/test6.svg (bilinear, sampling rate of 16)</figcaption>
-      </td>
-    </tr>
-    <br>
-  </table>
-</div>
+    <h2 align="middle">Section II: Sampling</h2>
 
-<h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
-<p>  
-  Level sampling is taking different sample locations from the image and adjusting the level of downsampling of the texture on that location, to prevent any aliasing caused by high-frequency changes.  
 
-  Bilinear pixel sampling slows down speed compared to nearest (due to more calculations on the four points), but there's better antialising power due to a smoother, linearly-interpolated change. 
-  In level sampling, trilinear resampling slows down speed and requires more memory compared to nearest (For trilinear, you need to calculate sample at two different levels and interpolate between them - requiring a total of 8 texel reads and 7 lerps). Just bilinear resampling is 4 texel reads and 3 lerps. 
-  In response, trilinear has better antialiasing because the change in mipmap depth is smoother and reduces high frequency changes. 
-  Number of samples per pixels increases the necessary memory and slows speed by a factor of the supersampling rate, as you need to store data of each supersample and process at each location to resolve to framebuffer. 
-  <br>
-  Coral texture applied to texmap/test-5:
-</p>
-<div align="middle">
-  <table style="width=100%">
-    <tr>
-      <td>
-        <img src="images/coral.png" align="middle" width="400px"/>
-        <figcaption align="middle">Coral landscape</figcaption>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img src="images/zero-nearest.png" align="middle" width="400px"/>
-        <figcaption align="middle">L_ZERO and P_NEAREST</figcaption>
-      </td>
-      <td>
-        <img src="images/zero-linear.png" align="middle" width="400px"/>
-        <figcaption align="middle">L_ZERO and P_LINEAR</figcaption>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img src="images/nearest-nearest.png" align="middle" width="400px"/>
-        <figcaption align="middle">L_NEAREST and P_NEAREST</figcaption>
-      </td>
-      <td>
-        <img src="images/nearest-linear.png" align="middle" width="400px"/>
-        <figcaption align="middle">L_NEAREST and P_LINEAR</figcaption>
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <img src="images/linear-nearest.png" align="middle" width="400px"/>
-        <figcaption align="middle">L_LINEAR and P_NEAREST</figcaption>
-      </td>
-      <td>
-        <img src="images/linear-linear.png" align="middle" width="400px"/>
-        <figcaption align="middle">L_LINEAR and P_LINEAR</figcaption>
-      </td>
-    </tr>
-    <br>
-  </table>
-</div>
+    <h3 align="middle">Part 4: Barycentric coordinates</h3>
+    <p>
+      Barycentric coordinates allow for interpolation within shapes.
+      Specifically, within triangles, barycentric coordinates are a straightforward representation to determine if a
+      point is within a triangle's area
+      (i.e. if at least one barycentric coordinate is negative, the point lies outside of the triangle).
+      Parameterizing points within the area of a triangle can be vital for applications in graphics, such as texture
+      mapping.
+      In the context of the triangle on the left, the three vertices are colored red, green, and blue, and the radial
+      color gradient helps visualize barycentric coordinates.
+      Say the red vertex was labeled A, blue vertex as B, and green vertex as C. Then, a point (x, y) on the triangle
+      could be mapped as (alpha, beta, gamma) such that alpha * A + beta * B + gamma * C = (x, y)
+      So, for example, vertex C would have barycentric coordinates of (0, 0, 1) since 0 * A + 0 * B + 1 * C = C.
+      Any point in the interior of the triangle would be composed of non-negative barycentric coordinates.
+    </p>
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/triangle.png" align="middle" width="400px" />
+            <figcaption align="middle">Radial gradients from vertices of triangle</figcaption>
+          </td>
+          <td>
+            <img src="images/updated-test7.png" align="middle" width="400px" />
+            <figcaption align="middle">basic/test7.svg</figcaption>
+          </td>
+        </tr>
+        <br>
+      </table>
+    </div>
+
+
+    <h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
+    <p>
+      Pixel sampling is the method of taking samples from real-world data. These samples can include textures, colors,
+      normals, etc.
+      The nearest neighbor pixel sampling method takes the closest defined pixel from the sample point.
+      The bilinear pixel sampling method takes the interpolated value, or weighted sum value, by interpolating across
+      the four closest defined pixels from the sample point.
+
+      The difference between the images is that bilinear sampling approximates an interpolated between all near points,
+      so there is less harsh aliasing.
+      If you look closely at the images with supersampling rate of 1, there is harsh aliasing in the nearest one because
+      there's no interpolation that smooths values over nearby pixels. Nearest simply takes the closest valued pixel.
+      This is less noticable in supersampling rate of 16, but bilinear sampling still leads to softer values with
+      filtered out high frequencies.
+      A large difference occurs when there are highly contrasting colors next to each other. Nearest sampling will cause
+      sharp differences across the contrast, which could lead to jaggies and high frequency signals. Interpolation
+      smooths pixels with the surrounding nearby sample points.
+    </p>
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/updated-test6-nearest-1.png" align="middle" width="400px" />
+            <figcaption align="middle">texmap/test6.svg (nearest, sampling rate of 1)</figcaption>
+          </td>
+          <td>
+            <img src="images/updated-test6-bilinear-1.png" align="middle" width="400px" />
+            <figcaption align="middle">texmap/test6.svg (bilinear, sampling rate of 1)</figcaption>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <img src="images/updated-test6-nearest-16.png" align="middle" width="400px" />
+            <figcaption align="middle">texmap/test6.svg (nearest, sampling rate of 16)</figcaption>
+          </td>
+          <td>
+            <img src="images/updated-test6-bilinear-16.png" align="middle" width="400px" />
+            <figcaption align="middle">texmap/test6.svg (bilinear, sampling rate of 16)</figcaption>
+          </td>
+        </tr>
+        <br>
+      </table>
+    </div>
+
+    <h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
+    <p>
+      Level sampling is taking different sample locations from the image and adjusting the level of downsampling of the
+      texture on that location, to prevent any aliasing caused by high-frequency changes.
+
+      Bilinear pixel sampling slows down speed compared to nearest (due to more calculations on the four points), but
+      there's better antialising power due to a smoother, linearly-interpolated change.
+      In level sampling, trilinear resampling slows down speed and requires more memory compared to nearest (For
+      trilinear, you need to calculate sample at two different levels and interpolate between them - requiring a total
+      of 8 texel reads and 7 lerps). Just bilinear resampling is 4 texel reads and 3 lerps.
+      In response, trilinear has better antialiasing because the change in mipmap depth is smoother and reduces high
+      frequency changes.
+      Number of samples per pixels increases the necessary memory and slows speed by a factor of the supersampling rate,
+      as you need to store data of each supersample and process at each location to resolve to framebuffer.
+      <br>
+      Coral texture applied to texmap/test-5:
+    </p>
+    <div align="middle">
+      <table style="width=100%">
+        <tr>
+          <td>
+            <img src="images/coral.png" align="middle" width="400px" />
+            <figcaption align="middle">Coral landscape</figcaption>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <img src="images/zero-nearest.png" align="middle" width="400px" />
+            <figcaption align="middle">L_ZERO and P_NEAREST</figcaption>
+          </td>
+          <td>
+            <img src="images/zero-linear.png" align="middle" width="400px" />
+            <figcaption align="middle">L_ZERO and P_LINEAR</figcaption>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <img src="images/nearest-nearest.png" align="middle" width="400px" />
+            <figcaption align="middle">L_NEAREST and P_NEAREST</figcaption>
+          </td>
+          <td>
+            <img src="images/nearest-linear.png" align="middle" width="400px" />
+            <figcaption align="middle">L_NEAREST and P_LINEAR</figcaption>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <img src="images/linear-nearest.png" align="middle" width="400px" />
+            <figcaption align="middle">L_LINEAR and P_NEAREST</figcaption>
+          </td>
+          <td>
+            <img src="images/linear-linear.png" align="middle" width="400px" />
+            <figcaption align="middle">L_LINEAR and P_LINEAR</figcaption>
+          </td>
+        </tr>
+        <br>
+      </table>
+    </div>
 
 
 </body>
+
 </html>
