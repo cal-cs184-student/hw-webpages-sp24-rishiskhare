@@ -1,6 +1,6 @@
-# CS184/284A Homework Webpage Repo
+# [CS184/284A Homework Webpage Repo](https://cal-cs184-student.github.io/hw-webpages-sp24-rishiskhare/)
 
-The goal of this repo is to provide a template from which students can host CS184/284A homework writeups. 
+The goal of this repo is to provide a template from which students can host CS184/284A homework writeups.
 
 ## Enabling Github Pages
 
